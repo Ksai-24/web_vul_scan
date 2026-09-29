@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Vul Scan | Security Audit Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            vertical-align: middle;
+        }
+        .pulsing-dot {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: .4; }
+        }
+        .finding-row:hover {
+            background-color: #1e293b;
+        }
+        .severity-critical { color: #ffb4ab; border-color: rgba(255, 180, 171, 0.3); background: rgba(147, 0, 10, 0.2); }
+        .severity-high { color: #ff938c; border-color: rgba(255, 147, 140, 0.3); background: rgba(141, 0, 18, 0.2); }
+        .severity-medium { color: #8ed5ff; border-color: rgba(142, 213, 255, 0.3); background: rgba(0, 73, 101, 0.2); }
+        .severity-low { color: #4edea3; border-color: rgba(78, 222, 163, 0.3); background: rgba(0, 56, 36, 0.2); }
+    </style>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "primary": "#8ed5ff",
+                        "primary-fixed": "#c4e7ff",
+                        "on-primary-container": "#004965",
+                        "surface-container": "#171f33",
+                        "secondary-fixed-dim": "#4edea3",
+                        "primary-container": "#38bdf8",
+                        "on-surface": "#dae2fd",
+                        "on-secondary": "#003824",
+                        "surface-variant": "#2d3449",
+                        "surface-container-high": "#222a3d",
+                        "secondary": "#4edea3",
+                        "surface-bright": "#31394d",
+                        "outline-variant": "#3e484f",
+                        "background": "#0b1326",
+                        "surface": "#0b1326",
+                        "tertiary-container": "#ff938c",
+                        "error-container": "#93000a",
+                        "tertiary": "#ffbcb7",
+                        "on-primary": "#00354a",
+                        "on-background": "#dae2fd",
+                        "secondary-container": "#00a572",
+                        "on-surface-variant": "#bdc8d1",
+                        "outline": "#87929a",
+                        "surface-container-lowest": "#060e20",
+                        "surface-container-low": "#131b2e",
+                        "error": "#ffb4ab"
+                    },
+                    "fontFamily": {
+                        "data-lg": ["JetBrains Mono"],
+                        "label-caps": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "data-sm": ["JetBrains Mono"],
+                        "headline-lg": ["Inter"],
+                        "body-md": ["Inter"]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-surface font-body-md overflow-x-hidden">
+<!-- TopNavBar -->
+<header class="fixed top-0 z-50 flex justify-between items-center w-full px-6 h-16 border-b border-outline-variant bg-background">
+<div class="flex items-center gap-4">
+<span class="text-2xl font-bold text-primary flex items-center gap-2">
+    <span class="material-symbols-outlined text-primary text-3xl">shield_lock</span> Vul Scan
+</span>
+<div class="h-6 w-[1px] bg-outline-variant mx-2"></div>
+<span class="font-mono text-xs text-on-surface-variant bg-surface-container px-3 py-1 rounded">ENGINE v2.4-STABLE</span>
+</div>
+<div class="flex items-center gap-4">
+<a href="/history" class="text-xs font-semibold text-primary hover:underline flex items-center gap-1">
+    <span class="material-symbols-outlined text-base">history</span> History & Reports
+</a>
+</div>
+</header>
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-16 h-[calc(100vh-64px)] w-64 flex flex-col border-r border-outline-variant bg-surface-container z-40 hidden md:flex">
+<div class="p-6 border-b border-outline-variant">
+<div class="flex items-center gap-2 mb-1">
+<span class="w-2.5 h-2.5 bg-secondary rounded-full pulsing-dot"></span>
+<span class="font-bold text-xs text-secondary tracking-wider">SYSTEM ACTIVE</span>
+</div>
+<p class="text-sm text-on-surface-variant">Scanner Engine: Ready</p>
+</div>
+<nav class="flex-1 py-4 overflow-y-auto">
+<a class="flex items-center gap-4 px-6 py-3 text-primary bg-surface-variant border-l-4 border-primary font-semibold" href="/">
+<span class="material-symbols-outlined">security</span>
+<span class="text-xs uppercase tracking-wider">Scan Audit</span>
+</a>
+<a class="flex items-center gap-4 px-6 py-3 text-on-surface-variant hover:bg-surface-container-high hover:text-on-surface transition-colors" href="/history">
+<span class="material-symbols-outlined">history</span>
+<span class="text-xs uppercase tracking-wider">Scan History</span>
+</a>
+</nav>
+<div class="p-4 mt-auto border-t border-outline-variant">
+<a href="/" class="block text-center w-full bg-primary-container text-on-primary-container font-bold py-2 rounded hover:opacity-90 transition-opacity">
+    + New Audit
+</a>
+</div>
+</aside>
+
+<!-- Main Content Canvas -->
+<main class="md:ml-64 pt-16 min-h-screen">
+<div class="p-6 space-y-6">
+
+<!-- SCAN INPUT FORM -->
+<form method="POST" id="scan-form" onsubmit="showScanningState()" class="flex flex-col md:flex-row gap-3 bg-surface-container-low border border-outline-variant p-4 rounded-xl shadow-lg">
+    <div class="relative flex-1">
+        <span class="material-symbols-outlined absolute left-3 top-3 text-outline">language</span>
+        <input name="url" type="text" id="target-input" class="bg-surface-container border border-outline-variant text-on-surface text-sm rounded-lg pl-10 pr-4 py-2.5 w-full focus:ring-2 focus:ring-primary focus:border-transparent outline-none font-mono" placeholder="Enter target URL (e.g. http://127.0.0.1:8080)" required value="{{ target or '' }}">
+    </div>
+    <button type="submit" id="scan-btn" class="bg-primary-container text-on-primary-container px-6 py-2.5 rounded-lg font-bold hover:opacity-90 transition-opacity flex items-center justify-center gap-2">
+        <span class="material-symbols-outlined text-[20px]" id="btn-icon">play_arrow</span>
+        <span id="btn-text">Launch Security Scan</span>
+    </button>
+</form>
+
+<!-- SCANNING OVERLAY / PROGRESS INDICATOR (Hidden by default) -->
+<div id="loading-state" class="hidden bg-surface-container-low border border-primary/40 rounded-xl p-8 text-center space-y-4">
+    <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-primary border-t-transparent"></div>
+    <h3 class="text-lg font-bold text-primary">Executing Live Security Audit...</h3>
+    <p class="text-sm text-outline">Analyzing headers, injecting SQL vectors, testing reflected XSS, and scanning sensitive directories.</p>
+</div>
+
+{% if results is not none %}
+<!-- Scan Header Section -->
+<section class="bg-surface-container-low border border-outline-variant rounded-xl p-6 relative overflow-hidden">
+<div class="flex flex-col md:flex-row justify-between md:items-center gap-4 pb-4 border-b border-outline-variant">
+    <div>
+        <div class="flex items-center gap-2 mb-1">
+            <span class="px-2 py-0.5 bg-secondary/10 text-secondary border border-secondary/30 rounded text-[11px] font-bold uppercase tracking-wider">Audit Complete</span>
+            <span class="text-outline text-xs">Target Host:</span>
+        </div>
+        <h1 class="text-2xl font-bold text-primary font-mono break-all">{{ target }}</h1>
+    </div>
+    <div class="flex gap-2">
+        {% if scan_id >= 0 %}
+        <a href="/export_pdf/{{ scan_id }}" class="flex items-center gap-2 px-4 py-2 bg-transparent border border-primary text-primary rounded font-semibold text-xs hover:bg-primary/10 transition-colors">
+            <span class="material-symbols-outlined text-base">download</span> Export PDF Report
+        </a>
+        {% endif %}
+        <a href="/" class="flex items-center gap-2 px-4 py-2 bg-surface-container border border-outline-variant text-on-surface rounded font-semibold text-xs hover:bg-surface-container-high transition-colors">
+            <span class="material-symbols-outlined text-base">refresh</span> Reset
+        </a>
+    </div>
+</div>
+
+<!-- Target Infrastructure Metadata -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
+    <div class="bg-surface-container p-3 rounded-lg border border-outline-variant/50">
+        <span class="text-[11px] text-outline uppercase font-bold block mb-1">IP Address</span>
+        <span class="font-mono text-sm text-on-surface font-semibold">{{ site_details.ip_address }}</span>
+    </div>
+    <div class="bg-surface-container p-3 rounded-lg border border-outline-variant/50">
+        <span class="text-[11px] text-outline uppercase font-bold block mb-1">Response Time</span>
+        <span class="font-mono text-sm text-on-surface font-semibold">{{ site_details.response_time }}</span>
+    </div>
+    <div class="bg-surface-container p-3 rounded-lg border border-outline-variant/50">
+        <span class="text-[11px] text-outline uppercase font-bold block mb-1">Detected Server</span>
+        <span class="font-mono text-sm text-on-surface font-semibold truncate block">{{ site_details.server }}</span>
+    </div>
+    <div class="bg-surface-container p-3 rounded-lg border border-outline-variant/50">
+        <span class="text-[11px] text-outline uppercase font-bold block mb-1">Tech Stack</span>
+        <span class="font-mono text-sm text-on-surface font-semibold truncate block">{{ site_details.technology }}</span>
+    </div>
+</div>
+</section>
+
+<!-- Severity Breakdown -->
+<section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+<div class="bg-surface-container-low border border-outline-variant p-4 rounded-xl text-center">
+<span class="text-2xl font-bold text-error block font-mono">{{ stats["Critical"] }}</span>
+<span class="text-xs font-bold text-outline uppercase tracking-wider">CRITICAL</span>
+</div>
+<div class="bg-surface-container-low border border-outline-variant p-4 rounded-xl text-center">
+<span class="text-2xl font-bold text-tertiary block font-mono">{{ stats["High"] }}</span>
+<span class="text-xs font-bold text-outline uppercase tracking-wider">HIGH</span>
+</div>
+<div class="bg-surface-container-low border border-outline-variant p-4 rounded-xl text-center">
+<span class="text-2xl font-bold text-primary block font-mono">{{ stats["Medium"] }}</span>
+<span class="text-xs font-bold text-outline uppercase tracking-wider">MEDIUM</span>
+</div>
+<div class="bg-surface-container-low border border-outline-variant p-4 rounded-xl text-center">
+<span class="text-2xl font-bold text-secondary block font-mono">{{ stats["Low"] }}</span>
+<span class="text-xs font-bold text-outline uppercase tracking-wider">LOW</span>
+</div>
+</section>
+
+<!-- Findings List -->
+<section class="bg-surface-container-low border border-outline-variant rounded-xl overflow-hidden">
+<div class="px-6 py-4 border-b border-outline-variant bg-surface-container-high/40 flex justify-between items-center">
+<h2 class="text-lg font-bold text-on-surface flex items-center gap-2">
+    <span class="material-symbols-outlined text-primary">bug_report</span> Detailed Audit Findings ({{ results|length }})
+</h2>
+</div>
+<div class="divide-y divide-outline-variant">
+{% if results %}
+    {% for finding in results %}
+    <div class="finding-group">
+    <button type="button" class="finding-row w-full flex items-center px-6 py-4 transition-colors text-left group" onclick="toggleDetails('finding-{{ loop.index }}')">
+    <div class="w-28 flex-shrink-0">
+    {% if finding.severity|upper == 'CRITICAL' %}
+        <span class="severity-critical px-2.5 py-1 rounded text-[10px] font-bold border">CRITICAL</span>
+    {% elif finding.severity|upper == 'HIGH' %}
+        <span class="severity-high px-2.5 py-1 rounded text-[10px] font-bold border">HIGH</span>
+    {% elif finding.severity|upper == 'MEDIUM' %}
+        <span class="severity-medium px-2.5 py-1 rounded text-[10px] font-bold border">MEDIUM</span>
+    {% else %}
+        <span class="severity-low px-2.5 py-1 rounded text-[10px] font-bold border">{{ finding.severity|upper }}</span>
+    {% endif %}
+    </div>
+    <div class="flex-1 min-w-0 pr-4">
+    <p class="text-on-surface font-semibold text-sm">{{ finding.vulnerability }}</p>
+    <p class="text-xs text-outline font-mono truncate">Target: {{ target }}</p>
+    </div>
+    <div class="flex items-center">
+    <span class="material-symbols-outlined text-outline group-hover:text-primary transition-transform duration-200" id="arrow-finding-{{ loop.index }}">expand_more</span>
+    </div>
+    </button>
+    
+    <!-- Expanded Detail Panel -->
+    <div class="hidden px-6 py-5 bg-surface-container border-t border-outline-variant space-y-4" id="finding-{{ loop.index }}">
+        <div>
+            <h4 class="text-xs font-bold text-primary uppercase tracking-wider mb-1 flex items-center gap-1">
+                <span class="material-symbols-outlined text-base">info</span> Description
+            </h4>
+            <p class="text-sm text-on-surface-variant leading-relaxed">{{ finding.description }}</p>
+        </div>
+        
+        {% if finding.impact %}
+        <div class="bg-surface-container-low p-3 rounded-lg border border-outline-variant/60">
+            <h4 class="text-xs font-bold text-tertiary uppercase tracking-wider mb-1 flex items-center gap-1">
+                <span class="material-symbols-outlined text-base">warning</span> Security & Business Impact
+            </h4>
+            <p class="text-sm text-on-surface-variant leading-relaxed">{{ finding.impact }}</p>
+        </div>
+        {% endif %}
+        
+        {% if finding.remediation %}
+        <div class="bg-surface-container-low p-3 rounded-lg border border-secondary/30">
+            <h4 class="text-xs font-bold text-secondary uppercase tracking-wider mb-1 flex items-center gap-1">
+                <span class="material-symbols-outlined text-base">build</span> Recommended Remediation
+            </h4>
+            <p class="text-sm text-on-surface-variant leading-relaxed font-mono">{{ finding.remediation }}</p>
+        </div>
+        {% endif %}
+    </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="p-8 text-center space-y-2">
+        <span class="material-symbols-outlined text-secondary text-4xl">check_circle</span>
+        <h3 class="text-lg font-bold text-secondary">Target Verified Secure</h3>
+        <p class="text-sm text-outline">No standard security vulnerabilities were detected on this target.</p>
+    </div>
+{% endif %}
+</div>
+</section>
+
+{% else %}
+<!-- WELCOME / DASHBOARD HOME STATE -->
+<section class="space-y-6">
+    <div class="bg-surface-container-low border border-outline-variant p-8 rounded-xl space-y-4">
+        <div class="flex items-center gap-3">
+            <span class="p-3 bg-primary/10 text-primary rounded-xl">
+                <span class="material-symbols-outlined text-3xl">radar</span>
+            </span>
+            <div>
+                <h2 class="text-xl font-bold text-primary">Web Application Vulnerability Audit Engine</h2>
+                <p class="text-sm text-outline">Automated academic security scanner for SQLi, Reflected XSS, Security Headers, and Exposed Directories.</p>
+            </div>
+        </div>
+        <hr class="border-outline-variant"/>
+        <div>
+            <h4 class="text-xs font-bold text-outline uppercase tracking-wider mb-3">Quick Start Test Targets</h4>
+            <div class="flex flex-wrap gap-3">
+                <button type="button" onclick="setTarget('http://127.0.0.1:8080')" class="px-4 py-2 bg-surface-container border border-primary/40 text-primary hover:bg-primary/10 rounded-lg text-sm font-semibold flex items-center gap-2 transition-colors">
+                    <span class="material-symbols-outlined text-base">science</span> Scan Local Test Lab (http://127.0.0.1:8080)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Features Overview Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-surface-container-low border border-outline-variant p-5 rounded-xl space-y-2">
+            <span class="material-symbols-outlined text-tertiary text-2xl">database</span>
+            <h3 class="font-bold text-sm text-on-surface">SQL Injection Detection</h3>
+            <p class="text-xs text-outline">Injects single-quote diagnostic vectors to evaluate error signatures from database drivers.</p>
+        </div>
+        <div class="bg-surface-container-low border border-outline-variant p-5 rounded-xl space-y-2">
+            <span class="material-symbols-outlined text-tertiary text-2xl">code</span>
+            <h3 class="font-bold text-sm text-on-surface">Reflected XSS Probe</h3>
+            <p class="text-xs text-outline">Verifies un-sanitized script element reflections inside DOM parameters.</p>
+        </div>
+        <div class="bg-surface-container-low border border-outline-variant p-5 rounded-xl space-y-2">
+            <span class="material-symbols-outlined text-primary text-2xl">shield</span>
+            <h3 class="font-bold text-sm text-on-surface">Security Headers Audit</h3>
+            <p class="text-xs text-outline">Inspects HTTP response headers for missing HSTS, CSP, X-Frame-Options, and nosniff rules.</p>
+        </div>
+        <div class="bg-surface-container-low border border-outline-variant p-5 rounded-xl space-y-2">
+            <span class="material-symbols-outlined text-secondary text-2xl">folder_open</span>
+            <h3 class="font-bold text-sm text-on-surface">Exposed Path Scan</h3>
+            <p class="text-xs text-outline">Scans for unauthenticated access to /admin, /backup, /config, and git repositories.</p>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+</div>
+
+<!-- Footer -->
+<footer class="mt-12 flex flex-col md:flex-row justify-between items-center px-6 py-4 border-t border-outline-variant bg-surface-container-lowest text-xs text-outline gap-2">
+<span>v2.4.0-stable | Web Application Vulnerability Scanner (Minor Project)</span>
+<div class="flex gap-4">
+<span>Python 3.14 + Flask Engine</span>
+</div>
+</footer>
+</main>
+
+<script>
+        function toggleDetails(id) {
+            const element = document.getElementById(id);
+            const arrow = document.getElementById('arrow-' + id);
+            
+            if (element.classList.contains('hidden')) {
+                element.classList.remove('hidden');
+                if (arrow) arrow.style.transform = 'rotate(180deg)';
+            } else {
+                element.classList.add('hidden');
+                if (arrow) arrow.style.transform = 'rotate(0deg)';
+            }
+        }
+
+        function setTarget(url) {
+            document.getElementById('target-input').value = url;
+            document.getElementById('scan-form').submit();
+        }
+
+        function showScanningState() {
+            const loading = document.getElementById('loading-state');
+            if (loading) loading.classList.remove('hidden');
+            const btn = document.getElementById('scan-btn');
+            if (btn) {
+                btn.disabled = true;
+                document.getElementById('btn-text').innerText = 'Scanning Target...';
+            }
+        }
+    </script>
+</body></html>
