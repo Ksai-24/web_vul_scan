@@ -80,7 +80,7 @@
     <span class="material-symbols-outlined text-primary text-3xl">shield_lock</span> Vul Scan
 </span>
 <div class="h-6 w-[1px] bg-outline-variant mx-2"></div>
-<span class="font-mono text-xs text-on-surface-variant bg-surface-container px-3 py-1 rounded">ENGINE v2.4-STABLE</span>
+<span class="font-mono text-xs text-on-surface-variant bg-surface-container px-3 py-1 rounded">ENGINE v2.5-EXTENDED</span>
 </div>
 <div class="flex items-center gap-4">
 <a href="/history" class="text-xs font-semibold text-primary hover:underline flex items-center gap-1">
@@ -134,8 +134,18 @@
 <div id="loading-state" class="hidden bg-surface-container-low border border-primary/40 rounded-xl p-8 text-center space-y-4">
     <div class="inline-block animate-spin rounded-full h-10 w-10 border-4 border-primary border-t-transparent"></div>
     <h3 class="text-lg font-bold text-primary">Executing Live Security Audit...</h3>
-    <p class="text-sm text-outline">Analyzing headers, injecting SQL vectors, testing reflected XSS, and scanning sensitive directories.</p>
+    <p class="text-sm text-outline">Analyzing headers, cookies, CORS, redirects, injecting SQL vectors, testing reflected XSS, and scanning sensitive paths.</p>
 </div>
+
+{% if error %}
+<div class="bg-error-container/20 border border-error/40 rounded-xl p-4 flex items-start gap-3">
+    <span class="material-symbols-outlined text-error">gpp_bad</span>
+    <div>
+        <h3 class="text-sm font-bold text-error">Scan Blocked</h3>
+        <p class="text-sm text-on-surface-variant">{{ error }}</p>
+    </div>
+</div>
+{% endif %}
 
 {% if results is not none %}
 <!-- Scan Header Section -->
@@ -160,8 +170,8 @@
     </div>
 </div>
 
-<!-- Target Infrastructure Metadata -->
-<div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
+<!-- Target Infrastructure Metadata + Risk Assessment -->
+<div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 pt-4">
     <div class="bg-surface-container p-3 rounded-lg border border-outline-variant/50">
         <span class="text-[11px] text-outline uppercase font-bold block mb-1">IP Address</span>
         <span class="font-mono text-sm text-on-surface font-semibold">{{ site_details.ip_address }}</span>
@@ -177,6 +187,14 @@
     <div class="bg-surface-container p-3 rounded-lg border border-outline-variant/50">
         <span class="text-[11px] text-outline uppercase font-bold block mb-1">Tech Stack</span>
         <span class="font-mono text-sm text-on-surface font-semibold truncate block">{{ site_details.technology }}</span>
+    </div>
+    <div class="bg-surface-container p-3 rounded-lg border border-primary/40">
+        <span class="text-[11px] text-outline uppercase font-bold block mb-1">Risk Score</span>
+        <span class="font-mono text-lg text-primary font-bold">{% if score is not none %}{{ score }}<span class="text-xs text-outline font-normal">/100</span>{% else %}—{% endif %}</span>
+    </div>
+    <div class="bg-surface-container p-3 rounded-lg border border-secondary/40">
+        <span class="text-[11px] text-outline uppercase font-bold block mb-1">Security Grade</span>
+        <span class="font-mono text-lg text-secondary font-bold">{% if grade %}{{ grade }}{% else %}—{% endif %}</span>
     </div>
 </div>
 </section>
@@ -316,7 +334,27 @@
         <div class="bg-surface-container-low border border-outline-variant p-5 rounded-xl space-y-2">
             <span class="material-symbols-outlined text-secondary text-2xl">folder_open</span>
             <h3 class="font-bold text-sm text-on-surface">Exposed Path Scan</h3>
-            <p class="text-xs text-outline">Scans for unauthenticated access to /admin, /backup, /config, and git repositories.</p>
+            <p class="text-xs text-outline">Scans for unauthenticated access to /admin, /backup, /config, git repositories and sensitive files like /.env.</p>
+        </div>
+        <div class="bg-surface-container-low border border-outline-variant p-5 rounded-xl space-y-2">
+            <span class="material-symbols-outlined text-tertiary text-2xl">link_off</span>
+            <h3 class="font-bold text-sm text-on-surface">Open Redirect Probe</h3>
+            <p class="text-xs text-outline">Tests redirect parameters for unvalidated external domain redirections.</p>
+        </div>
+        <div class="bg-surface-container-low border border-outline-variant p-5 rounded-xl space-y-2">
+            <span class="material-symbols-outlined text-primary text-2xl">public</span>
+            <h3 class="font-bold text-sm text-on-surface">CORS Misconfiguration</h3>
+            <p class="text-xs text-outline">Detects wildcard or origin-reflecting cross-origin resource sharing policies.</p>
+        </div>
+        <div class="bg-surface-container-low border border-outline-variant p-5 rounded-xl space-y-2">
+            <span class="material-symbols-outlined text-tertiary text-2xl">cookie</span>
+            <h3 class="font-bold text-sm text-on-surface">Cookie Security Flags</h3>
+            <p class="text-xs text-outline">Audits session cookies for missing Secure, HttpOnly and SameSite attributes.</p>
+        </div>
+        <div class="bg-surface-container-low border border-outline-variant p-5 rounded-xl space-y-2">
+            <span class="material-symbols-outlined text-primary text-2xl">fingerprint</span>
+            <h3 class="font-bold text-sm text-on-surface">Version & TLS Audit</h3>
+            <p class="text-xs text-outline">Flags disclosed server versions, directory listings and missing HTTPS redirects.</p>
         </div>
     </div>
 </section>
@@ -326,7 +364,7 @@
 
 <!-- Footer -->
 <footer class="mt-12 flex flex-col md:flex-row justify-between items-center px-6 py-4 border-t border-outline-variant bg-surface-container-lowest text-xs text-outline gap-2">
-<span>v2.4.0-stable | Web Application Vulnerability Scanner (Minor Project)</span>
+<span>v2.5.0-extended | Web Application Vulnerability Scanner (Minor Project)</span>
 <div class="flex gap-4">
 <span>Python 3.14 + Flask Engine</span>
 </div>

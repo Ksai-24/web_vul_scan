@@ -1,9 +1,13 @@
 services:
   - type: web
     name: vul-scan
-    env: python
+    runtime: python
+    plan: free
     buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
+    startCommand: gunicorn app:app --workers 1 --threads 8 --timeout 120
+    healthCheckPath: /health
     envVars:
       - key: PYTHON_VERSION
-        value: 3.11.0
+        value: 3.13.1
+      - key: ALLOW_PRIVATE_TARGETS
+        value: "0"
